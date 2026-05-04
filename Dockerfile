@@ -2,14 +2,20 @@
 
 # Base image with nginx, php-fpm and composer built on debian
 FROM wyveo/nginx-php-fpm:php74 as base
-RUN apt-get update && apt-get install -y wait-for-it libxrender1
+RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list \
+    && sed -i '/buster-updates/d' /etc/apt/sources.list \
+    && sed -i '/security.debian.org/d' /etc/apt/sources.list \
+    && sed -i '/nginx.org/d' /etc/apt/sources.list \
+    && find /etc/apt/sources.list.d/ -name "*.list" -delete \
+    && apt-get -o Acquire::Check-Valid-Until=false update \
+    && apt-get install -y wait-for-it libxrender1
 
 # Set up code
 WORKDIR /usr/share/nginx/html
 COPY . .
 
 # run composer, chmod files, setup laravel key
-RUN ./scripts/setup
+RUN sed -i 's/\r$//' ./scripts/setup && chmod +x ./scripts/setup && ./scripts/setup
 
 # The worker container runs the laravel queue in the background
 FROM base as worker
