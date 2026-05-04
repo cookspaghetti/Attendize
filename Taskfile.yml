@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  docker:build:
+    desc: Build Attendize Docker images
+    cmds:
+      - docker build --tag attendize_base --target base .
+      - docker build --tag attendize_worker --target worker .
+      - docker build --tag attendize_web --target web .
+
+  docker:run:
+    desc: Start Docker services in foreground
+    cmds:
+      - docker compose up
